@@ -54,3 +54,15 @@ http.createServer(function(req, res) {
 	}
 
 }).listen(1337);
+
+var open;
+try {
+	open = require('open');
+	open('http://localhost:1337/', function (err) {
+		if (err) throw err;
+		console.log('Triggered browser to open http://localhost:1337/');
+	});
+}catch(err) {
+	console.log('error: ' + err);
+	console.log('please open http://localhost:1337/');
+}
