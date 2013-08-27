@@ -11,7 +11,9 @@ var mimeTypes = {
     "js": "text/javascript",
     "css": "text/css"};
 
-http.createServer(function(req, res) {
+
+var port = 1337;
+var fileServer = function(req, res) {
 	var uri = url.parse(req.url).pathname;
 	var filename = path.join(process.cwd(), unescape(uri));
 	var stats;
@@ -53,16 +55,39 @@ http.createServer(function(req, res) {
 		res.end();
 	}
 
-}).listen(1337);
+}
+
+var loop = 0;
+
+var server = http.createServer(fileServer).listen(port);
+console.log('open port', port)
+server.on('error', function (err) {
+	console.log(err);
+
+	if(err.message.indexOf('EADDRINUSE') > -1) {
+		loop++;
+		port++;
+		if(loop < 5) {
+			console.log('retry to open port', port)
+			http.createServer(fileServer).listen(port);
+		} else {
+			throw err;
+		}
+	} else {
+		throw err;
+	}
+});
 
 var open;
-try {
-	open = require('open');
-	open('http://localhost:1337/', function (err) {
-		if (err) throw err;
-		console.log('Triggered browser to open http://localhost:1337/');
-	});
-}catch(err) {
-	console.log('error: ' + err);
-	console.log('please open http://localhost:1337/');
-}
+setTimeout(function(){
+	try {
+		open = require('open');
+		open('http://localhost:' + port + '/', function (err) {
+			if (err) throw err;
+			console.log('Triggered browser to open http://localhost:' + port + '/');
+		});
+	} catch(err) {
+		console.log('error: ' + err);
+		console.log('please open http://localhost:' + port + '/');
+	}
+}, 2000);
